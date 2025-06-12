@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const statsSchema = new mongoose.Schema({
   itemsTracked: { type: Number, default: 0 },
   foodDonated: { type: Number, default: 0 },
-  wasteSaved: { type: Number, default: 0 }, // measured in kg
+  wasteSaved: { type: Number, default: 0 }, 
 });
 
 const userSchema = new mongoose.Schema({
