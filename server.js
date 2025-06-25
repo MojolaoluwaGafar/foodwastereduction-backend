@@ -42,13 +42,14 @@ const statsRoutes = require("./routes/stats");
 app.use("/api/stats", statsRoutes);
 const trackRoute = require("./routes/track");
 app.use("/api/track", trackRoute);
-app.use("/api/tracked", require("./routes/tracked"));
+const trackedRoute = require("./routes/tracked")
+app.use("/api/tracked", trackedRoute);
 
 
 const startServer = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    console.log("MongoDB connected to:", process.env.MONGO_URI);
+    // console.log("MongoDB connected to:", process.env.MONGO_URI);
 
 
     console.log("About to start server...");
