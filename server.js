@@ -44,6 +44,9 @@ const trackRoute = require("./routes/track");
 app.use("/api/track", trackRoute);
 const trackedRoute = require("./routes/tracked")
 app.use("/api/tracked", trackedRoute);
+const foodRoutes = require("./routes/food.js");
+app.use("/api/food", foodRoutes);
+
 
 
 const startServer = async () => {
