@@ -6,7 +6,6 @@ const { protect } = require("../middleware/auth");
 // Get donations of the logged-in user
 router.get("/my", protect, async (req, res) => {
   try {
-    console.log("Fetching donations for user ID:", req.user?.id); 
     const donations = await FoodDonation.find({ user: req.user.id }).sort({
       createdAt: -1,
     });
@@ -16,26 +15,26 @@ router.get("/my", protect, async (req, res) => {
     res.status(500).json({ message: "Failed to fetch donations" });
   }
 });
-  
+
 // Get a single donation by ID
 router.get("/:id", protect, async (req, res) => {
-    try {
-      const donation = await FoodDonation.findOne({
-        _id: req.params.id,
-        user: req.user.id,
-      });
-  
-      if (!donation) {
-        return res.status(404).json({ message: "Donation not found" });
-      }
-  
-      res.json(donation);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Failed to fetch donation" });
+  try {
+    const donation = await FoodDonation.findOne({
+      _id: req.params.id,
+      user: req.user.id,
+    });
+
+    if (!donation) {
+      return res.status(404).json({ message: "Donation not found" });
     }
-  });
-  
+
+    res.json(donation);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch donation" });
+  }
+});
+
 // Create a new food donation
 router.post("/", protect, async (req, res) => {
   try {
@@ -49,7 +48,6 @@ router.post("/", protect, async (req, res) => {
   }
 });
 
-
 // Update a donation
 router.put("/:id", protect, async (req, res) => {
   try {
@@ -58,7 +56,8 @@ router.put("/:id", protect, async (req, res) => {
       req.body,
       { new: true }
     );
-    if (!updated) return res.status(404).json({ message: "Donation not found" });
+    if (!updated)
+      return res.status(404).json({ message: "Donation not found" });
     res.json(updated);
   } catch (err) {
     res.status(500).json({ message: "Failed to update donation" });
@@ -72,9 +71,11 @@ router.delete("/:id", protect, async (req, res) => {
       _id: req.params.id,
       user: req.user.id,
     });
-    if (!deleted) return res.status(404).json({ message: "Donation not found" });
-    res.json({ message: "Donation deleted" });
+    if (!deleted)
+      return res.status(404).json({ message: "Donation not found" });
+    res.json({ message: "Donation deleted successfully" });
   } catch (err) {
+    console.error("Delete error:", err);
     res.status(500).json({ message: "Failed to delete donation" });
   }
 });

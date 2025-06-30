@@ -29,6 +29,24 @@ router.get("/me", auth, async (req, res) => {
       .json({ message: "Failed to fetch user", error: err.message });
   }
 });
+// GET /api/auth/stats
+router.get("/stats", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({
+      itemsTracked: user.stats?.itemsTracked || 0,
+      foodDonated: user.stats?.foodDonated || 0,
+      wasteSaved: user.stats?.wasteSaved || 0,
+    });
+  } catch (err) {
+    console.error("❌ Error fetching stats:", err);
+    res.status(500).json({ message: "Failed to fetch stats" });
+  }
+});
+
   
 
 module.exports = router;
