@@ -14,9 +14,23 @@ const trackedItemSchema = new mongoose.Schema({
 });
 
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  name: {
+    type: String,
+    required: function () {
+      return !this.googleId;
+    },
+  },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  password: {
+    type: String,
+    required: function () {
+      return !this.googleId;
+    },
+  },
+  googleId: {
+    type: String,
+    default: null,
+  },
   stats: { type: statsSchema, default: () => ({}) },
   trackedItems: { type: [trackedItemSchema], default: [] },
 

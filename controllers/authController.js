@@ -2,6 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const axios = require("axios");
 
 
 exports.signup = async (req, res) => {
@@ -107,3 +108,52 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
+exports.googleAuth =async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    const response = await axios.get(
+      "https://www.googleapis.com/oauth2/v3/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const { email, name, email_verified, sub } = response.data;
+
+    if (!email_verified) {
+      return res.status(400).json({ message: "Email not verified" });
+    }
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = new User({
+        email,
+        name: user.name || name,
+        googleId: sub,
+        // password: "",
+      });
+      await user.save();
+    }
+
+    const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "15m",
+    });
+
+    res.status(200).json({
+      message: "Login successful",
+      token: jwtToken,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+      },
+    });
+  } catch (error) {
+    console.error("Google sign-in error:", error.message);
+    res.status(500).json({ message: "Google login failed" });
+  }
+};

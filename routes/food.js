@@ -79,5 +79,14 @@ router.delete("/:id", protect, async (req, res) => {
     res.status(500).json({ message: "Failed to delete donation" });
   }
 });
+router.get("/public", async (req, res) => {
+  try {
+    const donations = await FoodDonation.find().sort({ createdAt: -1 });
+    res.json(donations);
+  } catch (err) {
+    console.error("❌ Error fetching public donations:", err);
+    res.status(500).json({ message: "Failed to fetch public donations" });
+  }
+});
 
 module.exports = router;

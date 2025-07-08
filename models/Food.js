@@ -9,7 +9,6 @@ const foodSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  // optionally, link it to a user
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
