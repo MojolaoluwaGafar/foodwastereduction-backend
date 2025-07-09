@@ -14,7 +14,8 @@ const app = express();
 // );
 const allowedOrigins = [
   "http://localhost:5173",
-  "http://192.168.186.118:5173", // React on same machine via LAN IP
+  "https://foodwastereduction.vercel.app",
+ 
 ];
 
 app.use(
