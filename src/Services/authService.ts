@@ -19,8 +19,13 @@ const BCRYPT_ROUNDS = 12;
 // to reject as a wrong password (and can't be used to find accounts).
 const DUMMY_HASH = "$2b$12$CwTycUXWue0Thq9StjUM0uJ8yJ1Xc0Yy9oQH1d5rN0l8mXvZ3s3aK";
 
-const googleClientId = process.env.GOOGLE_CLIENT_ID?.trim();
-const googleClient = googleClientId ? new OAuth2Client(googleClientId) : null;
+// Google sign-in tokens must be issued for one of our OAuth clients: the one
+// in GOOGLE_CLIENT_ID, and the live web app's (also the Client's fallback in
+// apps/Client/src/utils/google.ts), so sign-in keeps working while a host
+// still has an old ID configured.
+const LIVE_GOOGLE_CLIENT_ID = "696845003047-5d1gev6gienmpk35ebffauo7gk78dh6k.apps.googleusercontent.com";
+const googleClientIds = [...new Set([process.env.GOOGLE_CLIENT_ID?.trim(), LIVE_GOOGLE_CLIENT_ID].filter(Boolean))] as string[];
+const googleClient = new OAuth2Client();
 
 export function toUserDto(user: UserDoc): UserDto {
   return {
@@ -100,11 +105,9 @@ export async function login(email: string, password: string): Promise<AuthRespon
 // against our client ID proves Google issued it for this app; an access token
 // from some other app can't be replayed here.
 export async function googleSignIn(credential: string): Promise<AuthResponse> {
-  if (!googleClient) throw new ServiceError(503, "Google sign-in isn't set up yet. Use email and password.");
-
   let payload;
   try {
-    const ticket = await googleClient.verifyIdToken({ idToken: credential, audience: googleClientId });
+    const ticket = await googleClient.verifyIdToken({ idToken: credential, audience: googleClientIds });
     payload = ticket.getPayload();
   } catch (error) {
     logger.warn({ err: error }, "Google token rejected");
