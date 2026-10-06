@@ -30,7 +30,8 @@ const googleClient = new OAuth2Client();
 export function toUserDto(user: UserDoc): UserDto {
   return {
     id: String(user._id),
-    name: user.name,
+    // Some accounts from the first version were saved without a name.
+    name: user.name?.trim() || user.email.split("@")[0],
     email: user.email,
     phone: user.phone ?? null,
     location: user.location ?? null,
@@ -121,9 +122,12 @@ export async function googleSignIn(credential: string): Promise<AuthResponse> {
 
   let user = (await User.findOne({ googleId: payload.sub }).select("+password")) ?? (await findByEmail(email, true));
   if (user) {
-    // An email/password account signing in with Google for the first time.
-    if (!user.googleId) {
-      user.googleId = payload.sub;
+    // An email/password account signing in with Google for the first time,
+    // or an old account that was saved without a name.
+    const missingName = !user.name?.trim() && payload.name?.trim();
+    if (!user.googleId || missingName) {
+      if (!user.googleId) user.googleId = payload.sub;
+      if (missingName) user.name = payload.name!.trim();
       await user.save();
     }
   } else {

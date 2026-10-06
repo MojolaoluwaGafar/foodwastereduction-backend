@@ -17,6 +17,14 @@ export async function runStartupMigrations(): Promise<void> {
   const changed = status.modifiedCount + category.modifiedCount + unit.modifiedCount;
   if (changed) logger.info({ changed }, "Filled in fields on listings from the first version");
 
+  // The first version's Google sign-up could save accounts without a name,
+  // which then fail validation on every save. Use the start of the email.
+  const unnamed = await mongoose.connection.collection("users").updateMany(
+    { $or: [{ name: { $exists: false } }, { name: null }, { name: "" }] },
+    [{ $set: { name: { $arrayElemAt: [{ $split: ["$email", "@"] }, 0] } } }],
+  );
+  if (unnamed.modifiedCount) logger.info({ count: unnamed.modifiedCount }, "Named accounts that had no name");
+
   const moved = await moveLegacyTrackedItems();
   if (moved.users) logger.info(moved, "Moved food tracked in the first version into pantry history");
 }
